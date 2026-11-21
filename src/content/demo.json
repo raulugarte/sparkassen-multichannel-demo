@@ -1,0 +1,41 @@
+{
+  "hero": {
+    "eyebrow": "Finanzen, die zu Ihrem Leben passen",
+    "title": "Mehr Möglichkeiten für morgen.",
+    "description": "Entdecken Sie digitale Finanzlösungen – über Website, App und Online-Banking."
+  },
+  "products": [
+    {
+      "slug": "girokonto",
+      "title": "Girokonto",
+      "category": "Banking",
+      "description": "Ihr Konto für alles, was im Alltag zählt.",
+      "cta": "Konto entdecken",
+      "icon": "▣"
+    },
+    {
+      "slug": "geldanlage",
+      "title": "Geldanlage",
+      "category": "Sparen & Anlegen",
+      "description": "Heute sparen, morgen Möglichkeiten schaffen.",
+      "cta": "Anlage entdecken",
+      "icon": "↗"
+    },
+    {
+      "slug": "privatkredit",
+      "title": "Privatkredit",
+      "category": "Finanzieren",
+      "description": "Für Vorhaben, die Ihnen wichtig sind.",
+      "cta": "Kredit entdecken",
+      "icon": "◇"
+    },
+    {
+      "slug": "baufinanzierung",
+      "title": "Baufinanzierung",
+      "category": "Immobilien",
+      "description": "Ein Zuhause, das zu Ihren Plänen passt.",
+      "cta": "Mehr erfahren",
+      "icon": "⌂"
+    }
+  ]
+}
