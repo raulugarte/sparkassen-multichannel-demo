@@ -35,3 +35,13 @@ Ohne konfigurierte AEM-IDs oder bei API-Fehlern werden ausschließlich die eigen
 ## Sicherheit und Abgrenzung
 
 Keine Zugangsdaten im Repository. Die App ist ausdrücklich eine Demo ohne echte Konten oder Finanzangebote. Das Vercel-Projekt ist eigenständig und verwendet keine Änderungen am bestehenden VR-Repository.
+
+## Website-Kanal (Update)
+
+Die eigenständige responsive Website ist unter `/website` erreichbar. Auf `/channels` besitzt Kanal 01 nun ebenfalls einen **Öffnen**-Link; die Hauptnavigation enthält einen Website-Eintrag. Die Website verwendet `getContent()` mit Master-Inhalten und greift wie die anderen Kanäle auf die separaten Sparkassen-Demodaten zurück. Es wurden keine AEM-Fragmente oder Vercel-Einstellungen verändert.
+
+### GitHub aktualisieren
+
+Entpacke die ZIP-Datei. Lade im bestehenden Repository die geänderten Dateien unter Beibehaltung ihrer Verzeichnispfade hoch: `src/app/website/page.tsx` (neu), `src/app/channels/page.tsx`, `src/components/Views.tsx`, `src/app/globals.css` und `README.md`. Committe auf `main`. Vercel baut automatisch neu. Kontrolliere danach `/website`, `/channels`, `/app` und `/banking-widget`.
+
+Hinweis: Ein lokaler Build konnte in der bereitgestellten Laufzeit mangels vollständig installierter npm-Abhängigkeiten nicht durchgeführt werden. Vercel sollte den Build mit den regulären Registry-Abhängigkeiten ausführen.
