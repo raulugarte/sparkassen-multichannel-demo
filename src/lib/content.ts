@@ -60,40 +60,48 @@ export async function getContent(): Promise<Content> {
 }
 
 
-// Mobile content is requested independently so an unsupported variation never
-// breaks the main product query or the other channels.
-const mobileVariationQuery = `query SparkassenMobileVariations {
-  sparkasseProduktList {
-    items {
-      _path
-      mobileDescription: description(variation: "mobile") { plaintext }
-    }
-  }
-}`;
-type MobileVariationResponse = {data?: {sparkasseProduktList?: {items?: Array<{_path:string;mobileDescription?:{plaintext?:string}|null}>}}; errors?: Array<{message:string}>};
+// AEM selects a complete CF variation at the list level, including its own
+// product image, text, related products, advisor and campaign references.
+// Missing variation values are resolved by AEM according to its CF fallback rules.
+const mobileVariationQuery = query
+  .replace("query SparkassenMultiChannel", "query SparkassenMultiChannelMobile")
+  .replace("sparkasseProduktList {", 'sparkasseProduktList(variation: "mobile") {');
+
 export async function getMobileContent(): Promise<Content> {
-  const master = await getContent();
   const endpoint = process.env.AEM_GRAPHQL_ENDPOINT;
   const token = process.env.AEM_AUTH_TOKEN;
-  if (master.source !== "aem" || !endpoint || !token) return master;
+  if (!endpoint || !token) return getContent();
   try {
     const response = await fetch(endpoint, {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", Accept: "application/json" },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
       body: JSON.stringify({ query: mobileVariationQuery }),
       next: { revalidate: 60 },
     });
     if (!response.ok) throw new Error(`Mobile variation HTTP ${response.status}`);
-    const result = await response.json() as MobileVariationResponse;
+    const result = await response.json() as GraphResponse;
     if (result.errors?.length) throw new Error(result.errors.map(e => e.message).join("; "));
-    const variations = new Map((result.data?.sparkasseProduktList?.items || []).map(item => [item._path, item.mobileDescription?.plaintext]));
-    return { ...master, products: master.products.map(product => {
-      const path = `/content/dam/sparkasse/produkte/sparkassen-${product.slug}`;
-      const mobileText = variations.get(path)?.trim();
-      return mobileText ? { ...product, description: mobileText } : product;
-    }) };
+    const items = result.data?.sparkasseProduktList?.items;
+    if (!Array.isArray(items) || !items.length) throw new Error("Keine Mobile-Produkte aus GraphQL");
+    return {
+      hero: demo.hero,
+      products: items
+        .filter(p => p._path.startsWith("/content/dam/sparkasse/produkte/"))
+        .map(mapProduct),
+      source: "aem",
+    };
   } catch (error) {
-    console.warn("Mobile variation unavailable; using master content", error);
-    return master;
+    console.warn("AEM mobile variation failed; falling back to master", error);
+    const master = await getContent();
+    return {
+      ...master,
+      warning: master.source === "aem"
+        ? "Mobile-Variation nicht erreichbar; Master-Inhalte werden angezeigt."
+        : master.warning,
+    };
   }
 }
