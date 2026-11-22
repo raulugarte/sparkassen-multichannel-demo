@@ -9,3 +9,20 @@
 .reference-details li{margin:.15rem 0}
 .reference-details p{margin:.45rem 0}
 .advisor-note{font-size:.82rem;margin-top:.5rem}
+
+/* AEM GraphQL image integration */
+.product-media{flex:0 0 112px;min-width:0;align-self:stretch;display:flex;align-items:center;justify-content:center}
+.product-photo{width:100%;height:112px;object-fit:cover;border-radius:9px;display:block}
+.product.compact .product-media{flex-basis:58px}
+.product.compact .product-photo{height:48px}
+.preview-hero{position:relative;isolation:isolate;min-height:175px;overflow:hidden}
+.preview-hero-photo{position:absolute;right:0;top:0;width:45%;height:100%;object-fit:cover;z-index:-1;mask-image:linear-gradient(to right,transparent,black 40%)}
+.preview-hero h2,.preview-hero p,.preview-hero .eyebrow{position:relative;max-width:58%}
+.mobile-product-icon{padding:0;overflow:hidden;min-width:40px;min-height:40px;display:grid;place-items:center}
+.mobile-product-photo{width:43px;height:43px;object-fit:cover;border-radius:6px}
+.recommend{position:relative;overflow:hidden;min-height:160px}
+.recommend-photo{width:38%;height:100%;object-fit:cover;position:absolute;right:0;top:0;opacity:.85;mask-image:linear-gradient(to right,transparent,black 45%)}
+.recommend h3,.recommend p,.recommend .eyebrow,.recommend .fake-button{position:relative;max-width:65%}
+.advisor-row{display:flex;align-items:center;gap:8px;margin-top:10px}
+.advisor-photo{width:36px;height:36px;border-radius:50%;object-fit:cover}
+@media(max-width:720px){.website-product-grid .product-media{flex-basis:90px}.website-product-grid .product-photo{height:95px}}
