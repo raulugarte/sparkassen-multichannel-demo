@@ -1,19 +1,21 @@
 import demo from "@/content/demo.json";
 
-export type RelatedProduct = { _path: string; title: string; description?: { plaintext?: string }; kategorie?: string; ctaLabel?: string };
-export type Advisor = { _path: string; fullName: string; position?: string; email?: string; telefon?: string; fachgebiete?: string[] };
+export type ImageRef = { _path?: string; _dynamicUrl?: string } | null;
+export type RelatedProduct = { produktbild?: ImageRef; _path: string; title: string; description?: { plaintext?: string }; kategorie?: string; ctaLabel?: string };
+export type Advisor = { beraterbild?: ImageRef; _path: string; fullName: string; position?: string; email?: string; telefon?: string; fachgebiete?: string[] };
 export type Campaign = { _path: string; title: string; description?: { plaintext?: string }; gueltigVon?: string; gueltigBis?: string; bedingungen?: { plaintext?: string } };
-export type Product = { slug: string; title: string; category: string; description: string; cta: string; icon: string; highlights: string[]; targetAudience?: string; relatedProducts: RelatedProduct[]; ansprechpartner: Advisor | null; aktionen: Campaign[] };
+export type Product = { produktbild?: ImageRef; slug: string; title: string; category: string; description: string; cta: string; icon: string; highlights: string[]; targetAudience?: string; relatedProducts: RelatedProduct[]; ansprechpartner: Advisor | null; aktionen: Campaign[] };
 export type Content = { hero: typeof demo.hero; products: Product[]; source: "demo" | "aem"; warning?: string };
 
-type GraphProduct = { _path: string; title: string; description?: { plaintext?: string }; highlights?: string[]; targetAudience?: string; ctaLabel?: string; kategorie?: string; relatedProducts?: RelatedProduct[]; ansprechpartner?: Advisor | null; aktionen?: Campaign[] };
+type GraphProduct = { produktbild?: ImageRef; _path: string; title: string; description?: { plaintext?: string }; highlights?: string[]; targetAudience?: string; ctaLabel?: string; kategorie?: string; relatedProducts?: RelatedProduct[]; ansprechpartner?: Advisor | null; aktionen?: Campaign[] };
 type GraphResponse = { data?: { sparkasseProduktList?: { items?: GraphProduct[] } }; errors?: Array<{ message: string }> };
-const query = `query SparkassenProdukteMitReferenzen {
+const query = `query SparkassenMultiChannel {
   sparkasseProduktList {
     items {
       _path title description { plaintext } highlights targetAudience ctaLabel kategorie
-      relatedProducts { ... on SparkasseProduktModel { _path title description { plaintext } kategorie ctaLabel } }
-      ansprechpartner { ... on SparkasseBeraterModel { _path fullName position email telefon fachgebiete } }
+      produktbild { ... on ImageRef { _path _dynamicUrl } }
+      relatedProducts { ... on SparkasseProduktModel { _path title description { plaintext } kategorie ctaLabel produktbild { ... on ImageRef { _path _dynamicUrl } } } }
+      ansprechpartner { ... on SparkasseBeraterModel { _path fullName position email telefon fachgebiete beraterbild { ... on ImageRef { _path _dynamicUrl } } } }
       aktionen { ... on SparkasseAktionModel { _path title description { plaintext } gueltigVon gueltigBis bedingungen { plaintext } } }
     }
   }
@@ -29,7 +31,7 @@ function fallback(): Content {
 function mapProduct(p: GraphProduct): Product {
   const slug = p._path.split("/").pop()?.replace(/^sparkassen-/, "") || "produkt";
   return {
-    slug, title: p.title, category: p.kategorie || "Bankprodukte", description: p.description?.plaintext || "",
+    produktbild: p.produktbild, slug, title: p.title, category: p.kategorie || "Bankprodukte", description: p.description?.plaintext || "",
     cta: p.ctaLabel || "Mehr erfahren", icon: iconBySlug[slug] || "◆",
     highlights: p.highlights || [], targetAudience: p.targetAudience,
     relatedProducts: p.relatedProducts || [], ansprechpartner: p.ansprechpartner || null,
