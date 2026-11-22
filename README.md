@@ -70,3 +70,10 @@ und einem neuen Seitenaufruf wird die Änderung abgefragt.
 **Hinweis:** Die REST-Fragment-ID-Variablen aus früheren Versionen sind nicht
 mehr erforderlich. Development Tokens können ablaufen. Die Live-Anbindung
 muss nach dem Deployment mit dem echten Token getestet werden.
+
+
+## AEM Assets / Bildintegration
+
+Die GraphQL-Query liest `produktbild`, `relatedProducts.produktbild` und `ansprechpartner.beraterbild` als `ImageRef`. Der Browser lädt Bilddateien ausschließlich über `/api/asset?path=...`. Die Next.js-Route ruft erlaubte Bildpfade aus `/content/dam/dsv/images/` serverseitig mit `AEM_AUTH_TOKEN` von AEM Author ab. Es werden keine Tokens an den Browser übertragen. Nur Bilder aus dem explizit freigegebenen Ordner werden angenommen.
+
+**Hinweis:** Die Route erwartet, dass die Author-Instanz die Asset-Originaldateien unter dem DAM-Pfad mit dem vorhandenen Bearer Token ausliefert. Falls AEM 403/404 liefert, muss die Auslieferung anhand der tatsächlichen Asset-API angepasst werden. Die Bildnutzungsrechte sind vor einer öffentlichen Demo zu prüfen.
