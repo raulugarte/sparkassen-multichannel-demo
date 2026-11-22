@@ -58,3 +58,42 @@ export async function getContent(): Promise<Content> {
     return { ...fallback(), warning: "AEM nicht erreichbar; lokale Demodaten werden angezeigt." };
   }
 }
+
+
+// Mobile content is requested independently so an unsupported variation never
+// breaks the main product query or the other channels.
+const mobileVariationQuery = `query SparkassenMobileVariations {
+  sparkasseProduktList {
+    items {
+      _path
+      mobileDescription: description(variation: "mobile") { plaintext }
+    }
+  }
+}`;
+type MobileVariationResponse = {data?: {sparkasseProduktList?: {items?: Array<{_path:string;mobileDescription?:{plaintext?:string}|null}>}}; errors?: Array<{message:string}>};
+export async function getMobileContent(): Promise<Content> {
+  const master = await getContent();
+  const endpoint = process.env.AEM_GRAPHQL_ENDPOINT;
+  const token = process.env.AEM_AUTH_TOKEN;
+  if (master.source !== "aem" || !endpoint || !token) return master;
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ query: mobileVariationQuery }),
+      next: { revalidate: 60 },
+    });
+    if (!response.ok) throw new Error(`Mobile variation HTTP ${response.status}`);
+    const result = await response.json() as MobileVariationResponse;
+    if (result.errors?.length) throw new Error(result.errors.map(e => e.message).join("; "));
+    const variations = new Map((result.data?.sparkasseProduktList?.items || []).map(item => [item._path, item.mobileDescription?.plaintext]));
+    return { ...master, products: master.products.map(product => {
+      const path = `/content/dam/sparkasse/produkte/sparkassen-${product.slug}`;
+      const mobileText = variations.get(path)?.trim();
+      return mobileText ? { ...product, description: mobileText } : product;
+    }) };
+  } catch (error) {
+    console.warn("Mobile variation unavailable; using master content", error);
+    return master;
+  }
+}
