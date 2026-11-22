@@ -45,3 +45,28 @@ Die eigenständige responsive Website ist unter `/website` erreichbar. Auf `/cha
 Entpacke die ZIP-Datei. Lade im bestehenden Repository die geänderten Dateien unter Beibehaltung ihrer Verzeichnispfade hoch: `src/app/website/page.tsx` (neu), `src/app/channels/page.tsx`, `src/components/Views.tsx`, `src/app/globals.css` und `README.md`. Committe auf `main`. Vercel baut automatisch neu. Kontrolliere danach `/website`, `/channels`, `/app` und `/banking-widget`.
 
 Hinweis: Ein lokaler Build konnte in der bereitgestellten Laufzeit mangels vollständig installierter npm-Abhängigkeiten nicht durchgeführt werden. Vercel sollte den Build mit den regulären Registry-Abhängigkeiten ausführen.
+
+## AEM GraphQL Author – Live-Integration
+
+Die drei Kanäle nutzen dieselbe GraphQL-Abfrage `sparkasseProduktList` einschließlich
+`relatedProducts`, `ansprechpartner` und `aktionen`. Die App liest ausschließlich
+serverseitig aus dem AEM Author und cached den Abruf 60 Sekunden.
+
+**Vercel > Settings > Environment Variables** (Production):
+
+- `AEM_GRAPHQL_ENDPOINT`: `https://author-p130407-e1279066.adobeaemcloud.com/content/cq:graphql/sparkasse/endpoint.json`
+- `AEM_AUTH_TOKEN`: gültiger AEM-Author-Bearer-Token (als Secret behandeln)
+
+Nach dem Speichern der Variablen ein **Redeploy** auslösen. Den Token niemals
+in GitHub, im Browser oder in `NEXT_PUBLIC_`-Variablen hinterlegen.
+
+Die Datenquelle wird auf `/channels` und `/website` angezeigt. Bei API-Fehlern
+werden lokale Sparkassen-Demodaten angezeigt; Fehlerdetails stehen in den
+Vercel Function Logs. Abgelaufene oder noch nicht gültige Aktionen werden
+nicht dargestellt. Eine Content-Änderung in AEM Author erfordert kein
+AEM Publish und kein Vercel Deployment: nach Ablauf des 60-Sekunden-Caches
+und einem neuen Seitenaufruf wird die Änderung abgefragt.
+
+**Hinweis:** Die REST-Fragment-ID-Variablen aus früheren Versionen sind nicht
+mehr erforderlich. Development Tokens können ablaufen. Die Live-Anbindung
+muss nach dem Deployment mit dem echten Token getestet werden.
