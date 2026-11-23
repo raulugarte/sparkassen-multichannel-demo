@@ -3,20 +3,23 @@
 import { useState } from "react";
 import type { ImageRef } from "@/lib/content";
 
-const DELIVERY_HOST = "delivery-p130407-e1279066.adobeaemcloud.com";
-const DELIVERY_ORIGIN = `https://${DELIVERY_HOST}`;
+const DELIVERY_ORIGIN = "https://delivery-p130407-e1279066.adobeaemcloud.com";
 const ASSET_PREFIX = "/content/dam/dsv/images/";
 
-// Use the URL returned by AEM GraphQL. Never synthesize a delivery URL
-// from the Author hostname or a DAM path.
-function deliveryUrl(image?: ImageRef): string | null {
-  if (!image?._dynamicUrl) return null;
+/** Convert AEM GraphQL Dynamic Media identifiers to the tested Assets Delivery URL format. */
+export function deliveryUrl(image?: ImageRef, width = 1200): string | null {
+  const raw = image?._dynamicUrl;
+  if (!raw) return null;
   try {
-    const url = new URL(image._dynamicUrl, DELIVERY_ORIGIN);
-    if (url.protocol !== "https:" || url.hostname !== DELIVERY_HOST) return null;
-    // Relative URLs must be delivery API paths, not Author DAM paths.
-    if (!url.pathname.startsWith("/adobe/dynamicmedia/deliver/") && !url.pathname.startsWith("/adobe/assets/")) return null;
-    return url.toString();
+    const url = new URL(raw, DELIVERY_ORIGIN);
+    const match = url.pathname.match(/^\/adobe\/dynamicmedia\/deliver\/dm-aid--([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})\/(.+)$/i);
+    if (!match) return null;
+    const id = match[1].toLowerCase();
+    // The trailing name is an output alias. Preserve the source name rather than inventing a product mapping.
+    const filename = match[2].split("/").pop();
+    if (!filename || !/^[\w.%-]+$/.test(filename)) return null;
+    const safeWidth = Math.max(100, Math.min(2400, Math.round(width)));
+    return `${DELIVERY_ORIGIN}/adobe/assets/urn:aaid:aem:${id}/as/${filename}?width=${safeWidth}`;
   } catch {
     return null;
   }
