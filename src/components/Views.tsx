@@ -1,10 +1,7 @@
 import Link from "next/link";
-import type { Content, Product, ImageRef } from "@/lib/content";
-export function AssetImage({image,alt,className=""}:{image?:ImageRef;alt:string;className?:string}) {
-  // AEM Author images are served by our authenticated server route; never expose the token.
-  if (!image?._path?.startsWith("/content/dam/dsv/images/")) return null;
-  return <img className={className} src={`/api/asset?path=${encodeURIComponent(image._path)}`} alt={alt} loading="lazy" />;
-}
+import type { Content, Product } from "@/lib/content";
+import { AssetImage } from "@/components/AssetImage";
+export { AssetImage } from "@/components/AssetImage";
 
 export function ProductCard({p,compact=false}:{p:Product;compact?:boolean}) {return <article className={`product ${compact?'compact':''}`}><div className="product-media"><AssetImage image={p.produktbild} alt={`Motiv zu ${p.title}`} className="product-photo" />{!p.produktbild?._path && <div className="product-icon">{p.icon}</div>}</div><div><span className="eyebrow">{p.category}</span><h3>{p.title}</h3><p>{p.description}</p><span className="product-link">{p.cta} →</span>{!compact && <div className="reference-details">{p.highlights.length>0 && <><b>Ihre Vorteile</b><ul>{p.highlights.slice(0,3).map(h=><li key={h}>{h}</li>)}</ul></>}{p.relatedProducts.length>0 && <p><b>Weitere Produkte:</b> {p.relatedProducts.map(r=>r.title).join(", ")}</p>}{p.ansprechpartner && <div className="advisor-row"><AssetImage image={p.ansprechpartner.beraterbild} alt={`Porträt ${p.ansprechpartner.fullName}`} className="advisor-photo"/><p><b>Beratung:</b> {p.ansprechpartner.fullName} · {p.ansprechpartner.position}</p></div>}{p.aktionen.map(a=><p key={a._path}><b>Aktion: {a.title}</b> – {a.description?.plaintext}</p>)}</div>}</div></article>}
 export function Website({data}:{data:Content}) {return <div className="website-preview"><div className="preview-nav"><span className="symbol">S</span><b>Finanzwelt</b><span>Privatkunden　 Sparen　 Service</span><span className="nav-login">Anmelden</span></div><div className="preview-hero"><AssetImage image={data.products.find(p=>p.slug==="baufinanzierung")?.produktbild} alt="Familienmotiv zur Baufinanzierung" className="preview-hero-photo"/><span className="eyebrow">{data.hero.eyebrow}</span><h2>{data.hero.title}</h2><p>{data.hero.description}</p><span className="fake-button">Angebote entdecken →</span></div><div className="preview-products">{data.products.slice(0,3).map(p=><ProductCard key={p.slug} p={p} compact/>)}</div></div>}
