@@ -15,7 +15,7 @@ function deliveryUrl(image?: ImageRef): string | null {
     const url = new URL(image._dynamicUrl, DELIVERY_ORIGIN);
     if (url.protocol !== "https:" || url.hostname !== DELIVERY_HOST) return null;
     // Relative URLs must be delivery API paths, not Author DAM paths.
-    if (!url.pathname.startsWith("/adobe/assets/")) return null;
+    if (!url.pathname.startsWith("/adobe/dynamicmedia/deliver/") && !url.pathname.startsWith("/adobe/assets/")) return null;
     return url.toString();
   } catch {
     return null;
